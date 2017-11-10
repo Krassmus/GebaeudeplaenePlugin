@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__."/lib/GPResource.php";
+require_once __DIR__."/lib/GPResourceInfo.php";
 
 class GebaeudeplaenePlugin extends StudIPPlugin implements SystemPlugin
 {
