@@ -11,7 +11,7 @@
         <tr>
             <td>
                 <a href="<?= PluginEngine::getLink($plugin, array('resource_id' => $resource['parent_id']), "tree/index") ?>">
-                    ..
+                    <?= Assets::img("icons/blue/20/arr_1left") ?>
                 </a>
             </td>
             <td></td>

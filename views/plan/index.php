@@ -1,5 +1,6 @@
+<?= \Studip\LinkButton::create(_("Zurück"), PluginEngine::getURL($plugin, array('resource_id' => $resource['parent_id']), "tree/index")) ?>
 <?= \Studip\LinkButton::create(_("Vollbild"), "#", array('onclick' => "STUDIP.showGebaeudeplan(); return false;")) ?>
-<?= \Studip\LinkButton::create(_("Informationen bearbeiten"), PluginEngine::getLink($plugin, array(), "info/edit/".$resource->getId()), array('data-dialog' => 1)) ?>
+<?= \Studip\LinkButton::create(_("Informationen bearbeiten"), PluginEngine::getURL($plugin, array(), "info/edit/".$resource->getId()), array('data-dialog' => 1)) ?>
 
 <div id="gebaeudeplan" style="background: white;">
     <?= $this->render_partial("plan/_gebaeudeplan") ?>
@@ -17,7 +18,7 @@
                     jQuery("#gebaeudeplan").html(html);
                 }
             });
-        }, 1000 * 6000);
+        }, 1000 * 60);
     });
 
     STUDIP.showGebaeudeplan = function () {
