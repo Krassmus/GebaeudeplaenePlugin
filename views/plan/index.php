@@ -6,6 +6,13 @@
     <?= $this->render_partial("plan/_gebaeudeplan") ?>
 </div>
 
+<style>
+    tr.ex_termin > td {
+        text-decoration: line-through;
+        opacity: 0.5;
+    }
+</style>
+
 <script>
     jQuery(function () {
         window.setInterval(function () {

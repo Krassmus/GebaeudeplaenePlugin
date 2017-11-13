@@ -21,7 +21,7 @@
             <? if (count($dates)) : ?>
                 <? foreach ($dates as $number => $date) : ?>
                     <? if ($number >= $max) { break; } ?>
-                    <tr>
+                    <tr class="<?= is_a($date, "CourseExDate") ? "ex_termin" : "" ?>">
                         <td>
                             <?= date("G:i", $date['date']) ?>
                         </td>
@@ -45,7 +45,12 @@
                             </ul>
                         </td>
                         <td>
-                            <?= htmlReady($date->getRoomName()) ?>
+                            <? if (!is_a($date, "CourseExDate")) : ?>
+                                <?= htmlReady($date->getRoomName()) ?>
+                            <? else : ?>
+                                <? $room = GPResource::find($date['resource_id']) ?>
+                                <?= htmlReady($room ? $room['name'] : "") ?>
+                            <? endif ?>
                         </td>
                     </tr>
                 <? endforeach ?>
