@@ -17,9 +17,8 @@ class InitPlugin extends Migration {
 	}
 	
 	public function down() {
-        $statement = DBManager::get()->prepare("
+        DBManager::get()->exec("
             DROP TABLE IF EXISTS `gebaeudeplan_infos`
         ");
-        $statement->execute();
 	}
 }

@@ -1,12 +1,12 @@
 <div style="padding: 20px; display: flex; flex-direction: row; align-content: stretch; align-items: stretch; justify-content: space-evenly; height: 100vh;">
-    <div style="width: 100%; display: flex; flex-direction: column; align-content: stretch; align-items: stretch; justify-content: space-evenly;">
+    <div style="width: 100%; display: flex; flex-direction: column; align-content: stretch; align-items: stretch; justify-content: center;">
         <? if ($resource->info && $resource->info['top_info']) : ?>
             <div class="top_info" style="padding: 10px;">
                 <?= formatReady($resource->info ? $resource->info['top_info'] : "") ?>
             </div>
         <? endif ?>
         <table class="default">
-            <caption><?= htmlReady($resource->name) ?></caption>
+            <caption><?= htmlReady($resource->info['title'] ?: $resource->name) ?></caption>
             <thead>
                 <tr>
                     <th><?= _("Beginn") ?></th>

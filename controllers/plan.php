@@ -4,8 +4,12 @@ require_once 'app/controllers/plugin_controller.php';
 
 class PlanController extends PluginController {
 
-    public function index_action() {
+    public function index_action()
+    {
         Navigation::activateItem("/gebaeudeplaene/tree");
+        PageLayout::setTitle(_("Gebäudeplan"));
+        PageLayout::addScript($this->plugin->getPluginURL()."/assets/gebaeudeplan.js");
+        PageLayout::addStylesheet($this->plugin->getPluginURL()."/assets/gebaeudeplan.css");
         $this->resource = GPResource::find(Request::option("resource_id"));
         $resource_ids = array($this->resource->getId());
         do {
@@ -47,6 +51,14 @@ class PlanController extends PluginController {
                 $this->dates[] = CourseDate::buildExisting($data);
             }
         }
+    }
+
+    public function kiosk_action()
+    {
+        $this->index_action();
+        $tf = new Flexi_TemplateFactory(__DIR__."/../views");
+        $this->set_layout($tf->open("plan/kiosk_layout.php"));
+        $this->render_action("_gebaeudeplan");
     }
 
     public function get_update_action() {
