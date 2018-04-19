@@ -23,7 +23,10 @@
 
 <body>
 
-    <div id="gebaeudeplan" style="background: white;" data-resource_id="<?= htmlReady(Request::option("resource_id")) ?>">
+    <div id="gebaeudeplan"
+         style="background: white;"
+         data-resource_id="<?= htmlReady(Request::option("resource_id")) ?>"
+         data-free="<?= Request::int("free") ?>">
         <?= $this->render_partial("plan/_gebaeudeplan") ?>
     </div>
 

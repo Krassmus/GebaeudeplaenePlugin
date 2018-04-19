@@ -34,6 +34,10 @@
                    title="<?= _("Plan anzeigen") ?>">
                     <?= Assets::img("icons/20/blue/tan3") ?>
                 </a>
+                <a href="<?= PluginEngine::getLink($plugin, array('resource_id' => $resource->getId(), 'free' => 1), "plan") ?>"
+                   title="<?= _("Plan mit freien Ortsangaben anzeigen") ?>">
+                    <?= Assets::img("icons/20/blue/add/tan3") ?>
+                </a>
             </td>
         </tr>
     <? endforeach ?>

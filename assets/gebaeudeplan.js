@@ -3,7 +3,8 @@ jQuery(function () {
         jQuery.ajax({
             url: STUDIP.ABSOLUTE_URI_STUDIP + "plugins.php/gebaeudeplaeneplugin/plan/get_update",
             data: {
-                "resource_id": jQuery("#gebaeudeplan").data("resource_id")
+                "resource_id": jQuery("#gebaeudeplan").data("resource_id"),
+                "free": jQuery("#gebaeudeplan").data("free")
             },
             success: function (html) {
                 jQuery("#gebaeudeplan").html(html);

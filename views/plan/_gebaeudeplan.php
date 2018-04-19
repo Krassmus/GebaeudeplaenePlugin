@@ -49,7 +49,7 @@
                                 <?= htmlReady($date->getRoomName()) ?>
                             <? else : ?>
                                 <? $room = GPResource::find($date['resource_id']) ?>
-                                <?= htmlReady($room ? $room['name'] : "") ?>
+                                <?= htmlReady($room ? $room['name'] : $date['raum']) ?>
                             <? endif ?>
                         </td>
                     </tr>

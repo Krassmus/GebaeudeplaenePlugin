@@ -22,6 +22,27 @@ class PlanController extends PluginController {
             $statement->execute(array('resource_ids' => $resource_ids));
             $resource_ids = array_unique(array_merge($resource_ids, $statement->fetchAll(PDO::FETCH_COLUMN, 0)));
         } while (count($resource_ids) !== $oldcount);
+        if (Request::get("free")) {
+            $freieangaben = "
+                UNION (
+                    SELECT termine.*, '' AS resource_id, '0' AS is_ex_termin
+                    FROM termine
+                    WHERE termine.end_time > UNIX_TIMESTAMP()
+                        AND termine.date < UNIX_TIMESTAMP() + 43200
+                        AND termine.raum IS NOT NULL 
+                        AND termine.raum != ''
+                        
+                )
+                UNION (
+                    SELECT ex_termine.*, '1' AS is_ex_termin
+                    FROM ex_termine
+                    WHERE ex_termine.end_time > UNIX_TIMESTAMP()
+                        AND ex_termine.date < UNIX_TIMESTAMP() + 43200
+                        AND ex_termine.raum IS NOT NULL 
+                        AND ex_termine.raum != ''
+                )
+            ";
+        }
         $statement = DBManager::get()->prepare("
             (SELECT termine.*, '' AS resource_id, '0' AS is_ex_termin
             FROM termine
@@ -38,6 +59,7 @@ class PlanController extends PluginController {
                 AND ex_termine.end_time > UNIX_TIMESTAMP()
                 AND ex_termine.date < UNIX_TIMESTAMP() + 43200
             )
+            ".$freieangaben."
             ORDER BY date ASC
         ");
         $statement->execute(array(
