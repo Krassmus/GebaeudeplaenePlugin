@@ -2,7 +2,9 @@
 
 require_once 'app/controllers/plugin_controller.php';
 
-class InfoController extends PluginController {
+class InfoController extends PluginController
+{
+    protected $utf8decode_xhr = true;
 
     public function edit_action($resource_id) {
         Navigation::activateItem("/gebaeudeplaene/tree");
