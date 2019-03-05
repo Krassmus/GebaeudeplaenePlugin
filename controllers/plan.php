@@ -7,7 +7,7 @@ class PlanController extends PluginController {
     public function index_action()
     {
         Navigation::activateItem("/gebaeudeplaene/tree");
-        PageLayout::setTitle(_("Gebäudeplan"));
+        PageLayout::setTitle(_("GebÃ¤udeplan"));
         PageLayout::addScript($this->plugin->getPluginURL()."/assets/gebaeudeplan.js");
         PageLayout::addStylesheet($this->plugin->getPluginURL()."/assets/gebaeudeplan.css");
         $this->resource = GPResource::find(Request::option("resource_id"));

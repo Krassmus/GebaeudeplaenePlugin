@@ -8,7 +8,7 @@ class InfoController extends PluginController
 
     public function edit_action($resource_id) {
         Navigation::activateItem("/gebaeudeplaene/tree");
-        PageLayout::setTitle(_("Gebäudeplan"));
+        PageLayout::setTitle(_("GebÃ¤udeplan"));
         $this->resource = GPResource::find($resource_id);
         $this->info = new GPResourceInfo($resource_id);
         if (Request::isPost()) {
