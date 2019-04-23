@@ -65,8 +65,8 @@ class PlanController extends PluginController {
                 SELECT termine.`date` AS `begin`, 
                        termine.`end_time` AS `end`, 
                        seminare.name AS name, 
-                       '0' AS is_ex_termin, 
-                       IF(termin_related_persons.user_id IS NULL, GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ','), GROUP_CONCAT(termin_related_persons.user_id ORDER BY seminar_user.position ASC SEPARATOR ',')) AS `dozenten`, 
+                       '0' AS is_ex_termin,
+                       IFNULL (GROUP_CONCAT(termin_related_persons.user_id ORDER BY seminar_user.position ASC SEPARATOR ','), GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',')) AS `dozenten`, 
                        resources_objects.name AS `room`
                 FROM termine
                     INNER JOIN resources_assign ON (termine.termin_id = resources_assign.assign_user_id)
@@ -77,7 +77,7 @@ class PlanController extends PluginController {
                 WHERE resources_assign.resource_id IN (:resource_ids)
                     AND termine.end_time > UNIX_TIMESTAMP()
                     AND termine.date < UNIX_TIMESTAMP() + 43200
-                GROUP BY termine.termin_id
+                /* GROUP BY termine.termin_id */
             )
             UNION /* ex_termine */
             (
