@@ -21,36 +21,28 @@
             <? if (count($dates)) : ?>
                 <? foreach ($dates as $number => $date) : ?>
                     <? if ($number >= $max) { break; } ?>
-                    <tr class="<?= is_a($date, "CourseExDate") ? "ex_termin" : "" ?>">
+
+                    <tr class="<?= $date['class'] ?>">
                         <td>
-                            <?= date("G:i", $date['date']) ?>
+                            <?= date("G:i", $date['begin']) ?>
                         </td>
                         <td>
-                            <?= date("G:i", $date['end_time']) ?>
+                            <?= date("G:i", $date['end']) ?>
                         </td>
                         <td>
-                            <?= htmlReady($date->course->name) ?>
+                            <?= htmlReady($date['name']) ?>
                         </td>
                         <td>
                             <ul class="clean">
-                                <? if (count($date->dozenten)) : ?>
-                                    <? foreach ($date->dozenten as $dozent) : ?>
-                                        <li><?= htmlReady($dozent->getFullname()) ?></li>
-                                    <? endforeach ?>
-                                <? else : ?>
-                                    <? foreach ($date->course->members->filter(function ($member, $value) { return $member['status'] === "dozent"; }) as $member) : ?>
-                                        <li><?= htmlReady($member->getUserFullname()) ?></li>
+                                <? if ($date['dozenten']) : ?>
+                                    <? foreach (explode(",", $date['dozenten']) as $dozent_id) : ?>
+                                        <li><?= htmlReady(get_fullname($dozent_id)) ?></li>
                                     <? endforeach ?>
                                 <? endif ?>
                             </ul>
                         </td>
                         <td>
-                            <? if (!is_a($date, "CourseExDate")) : ?>
-                                <?= htmlReady($date->getRoomName()) ?>
-                            <? else : ?>
-                                <? $room = GPResource::find($date['resource_id']) ?>
-                                <?= htmlReady($room ? $room['name'] : $date['raum']) ?>
-                            <? endif ?>
+                            <?= htmlReady($date['room']) ?>
                         </td>
                     </tr>
                 <? endforeach ?>
