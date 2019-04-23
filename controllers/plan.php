@@ -31,7 +31,7 @@ class PlanController extends PluginController {
                         termine.`end_time` AS `end`, 
                         seminare.name AS name, 
                         '0' AS is_ex_termin, 
-                        IF(termin_related_persons.user_id IS NULL, GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ','), GROUP_CONCAT(termin_related_persons.user_id ORDER BY seminar_user.position ASC SEPARATOR ',')) AS `dozenten`, 
+                        IFNULL (GROUP_CONCAT(termin_related_persons.user_id ORDER BY seminar_user.position ASC SEPARATOR ','), GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',')) AS `dozenten`, 
                         termine.raum AS `room` 
                     FROM termine
                         INNER JOIN seminare ON (seminare.Seminar_id = termine.range_id)
