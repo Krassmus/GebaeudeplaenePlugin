@@ -25,7 +25,7 @@ class PlanController extends PluginController {
 
         if (Request::get("free")) {
             $freieangaben = "
-                UNION (
+                UNION ( /* termine ohne Räume */
                     SELECT
                         termine.`date` AS `begin`, 
                         termine.`end_time` AS `end`, 
@@ -42,7 +42,7 @@ class PlanController extends PluginController {
                         AND termine.raum IS NOT NULL 
                         AND termine.raum != ''
                 )
-                UNION (
+                UNION ( /* ex_termine ohne Räume */
                     SELECT
                         ex_termine.`date` AS `begin`, 
                         ex_termine.`end_time` AS `end`, 
@@ -61,7 +61,7 @@ class PlanController extends PluginController {
             ";
         }
         $statement = DBManager::get()->prepare("
-            (
+            (   /* termine */
                 SELECT termine.`date` AS `begin`, 
                        termine.`end_time` AS `end`, 
                        seminare.name AS name, 
