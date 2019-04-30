@@ -21,34 +21,43 @@
             <? if (count($dates)) : ?>
                 <? foreach ($dates as $number => $date) : ?>
                     <? if ($number >= $max) { break; } ?>
-
-                    <tr class="<?= $date['class'] ?>">
+                    <tr class="<?= is_a($date, "CourseExDate") ? "ex_termin" : "" ?>">
                         <td>
-                            <?= date("G:i", $date['begin']) ?>
+                            <?= date("G:i", $date['date']) ?>
                         </td>
                         <td>
-                            <?= date("G:i", $date['end']) ?>
+                            <?= date("G:i", $date['end_time']) ?>
                         </td>
                         <td>
-                            <?= htmlReady($date['name']) ?>
+                            <?= htmlReady($date->course->name) ?>
                         </td>
                         <td>
-                            <? if ($date['dozenten']) : ?>
-                                <? foreach (explode(",", $date['dozenten']) as $count => $dozent_id) {
-                                    echo $count > 0 ? ", " : "";
-                                    $dozent = User::find($dozent_id);
-                                    if ($dozent) {
-                                        echo htmlReady(
+                            <? if (count($date->dozenten)) {
+                                $dozenten = $date->dozenten;
+                            } else {
+                                $dozenten = $date->course
+                                                 ->members
+                                                 ->filter(function ($member, $value) { return $member['status'] === "dozent"; })
+                                                 ->map(function ($member) { return $member->user; });
+                            }
+                            foreach ($dozenten as $count => $dozent) {
+                                echo $count > 0 ? ", " : "";
+                                if ($dozent) {
+                                    echo htmlReady(
                                         $dozent['title_front']
-                                                ? $dozent['title_front']. " ". $dozent['nachname']
-                                                : $dozent['vorname']. " ". $dozent['nachname']
-                                        );
-                                    }
-                                } ?>
-                            <? endif ?>
+                                            ? $dozent['title_front']. " ". $dozent['nachname']
+                                            : $dozent['vorname']. " ". $dozent['nachname']
+                                    );
+                                }
+                            } ?>
                         </td>
                         <td>
-                            <?= htmlReady($date['room']) ?>
+                            <? if (!is_a($date, "CourseExDate")) : ?>
+                                <?= htmlReady($date->getRoomName()) ?>
+                            <? else : ?>
+                                <? $room = GPResource::find($date['resource_id']) ?>
+                                <?= htmlReady($room ? $room['name'] : $date['raum']) ?>
+                            <? endif ?>
                         </td>
                     </tr>
                 <? endforeach ?>

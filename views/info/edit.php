@@ -3,7 +3,7 @@
       action="<?= PluginEngine::getLink($plugin, array(), "info/edit/".$resource->getId()) ?>"
       data-dialog>
     <section>
-        <legend><?= sprintf(_("GebÃ¤udeplan-Information zu %s"), htmlReady($resource->name)) ?></legend>
+        <legend><?= sprintf(_("Gebäudeplan-Information zu %s"), htmlReady($resource->name)) ?></legend>
         <label>
             <?= _("Top-Information") ?>
             <textarea style="width: 90%;" name="top_info" class="add_toolbar"><?= htmlReady($info['top_info']) ?></textarea>

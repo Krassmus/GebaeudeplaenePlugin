@@ -1,4 +1,4 @@
-<?= \Studip\LinkButton::create(_("ZurÃ¼ck"), PluginEngine::getURL($plugin, array('resource_id' => $resource['parent_id']), "tree/index")) ?>
+<?= \Studip\LinkButton::create(_("Zurück"), PluginEngine::getURL($plugin, array('resource_id' => $resource['parent_id']), "tree/index")) ?>
 <?= \Studip\LinkButton::create(_("Vollbild"), "#", array('onclick' => "STUDIP.showGebaeudeplan(); return false;")) ?>
 <?= \Studip\LinkButton::create(_("Kiosk-Modus"), PluginEngine::getURL($plugin, array('resource_id' => $resource->getId(), 'free' => Request::int("free")), "plan/kiosk"), array()) ?>
 <?= \Studip\LinkButton::create(_("Informationen bearbeiten"), PluginEngine::getURL($plugin, array(), "info/edit/".$resource->getId()), array('data-dialog' => 1)) ?>

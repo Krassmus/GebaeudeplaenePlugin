@@ -11,7 +11,7 @@
         <tr>
             <td>
                 <a href="<?= PluginEngine::getLink($plugin, array('resource_id' => $resource['parent_id']), "tree/index") ?>">
-                    <?= Icon::create("arr_1left", "clickable")->asImg(20, array('class' => "text-bottom")) ?>
+                    <?= Assets::img("icons/blue/20/arr_1left") ?>
                 </a>
             </td>
             <td></td>
@@ -27,16 +27,16 @@
             <td class="actions">
                 <? if ($GLOBALS['perm']->have_perm("admin")) : ?>
                     <a href="<?= PluginEngine::getLink($plugin, array(), "info/edit/".$resource->getId()) ?>" data-dialog>
-                        <?= Icon::create("edit", "clickable")->asImg(20, array('class' => "text-bottom")) ?>
+                        <?= Assets::img("icons/20/blue/edit") ?>
                     </a>
                 <? endif ?>
                 <a href="<?= PluginEngine::getLink($plugin, array('resource_id' => $resource->getId()), "plan") ?>"
                    title="<?= _("Plan anzeigen") ?>">
-                    <?= Icon::create("tan3", "clickable")->asImg(20, array('class' => "text-bottom")) ?>
+                    <?= Assets::img("icons/20/blue/tan3") ?>
                 </a>
                 <a href="<?= PluginEngine::getLink($plugin, array('resource_id' => $resource->getId(), 'free' => 1), "plan") ?>"
                    title="<?= _("Plan mit freien Ortsangaben anzeigen") ?>">
-                    <?= Icon::create("tan3+add", "clickable")->asImg(20, array("class" => "text-bottom")) ?>
+                    <?= Assets::img("icons/20/blue/add/tan3") ?>
                 </a>
             </td>
         </tr>

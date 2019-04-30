@@ -7,11 +7,11 @@ class GebaeudeplaenePlugin extends StudIPPlugin implements SystemPlugin
 {
     public function __construct() {
         parent::__construct();
-        $nav = new Navigation(_("GebÃ¤udeplÃ¤ne"), PluginEngine::getURL($this, array(), "tree"));
+        $nav = new Navigation(_("Gebäudepläne"), PluginEngine::getURL($this, array(), "tree"));
         if ($GLOBALS['perm']->have_perm("admin")) {
-            $nav->setImage(Icon::create("institute", "navigation"));
+            $nav->setImage(Assets::image_path("icons/28/lightblue/institute"));
         }
-        $tree = new Navigation(_("GebÃ¤udebaum"), PluginEngine::getURL($this, array(), "tree"));
+        $tree = new Navigation(_("Gebäudebaum"), PluginEngine::getURL($this, array(), "tree"));
         $nav->addSubNavigation("tree", $tree);
         Navigation::addItem("/gebaeudeplaene", $nav);
     }
