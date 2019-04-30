@@ -40,14 +40,16 @@
                                                  ->filter(function ($member, $value) { return $member['status'] === "dozent"; })
                                                  ->map(function ($member) { return $member->user; });
                             }
+                            $already = false;
                             foreach ($dozenten as $count => $dozent) {
-                                echo $count > 0 ? ", " : "";
                                 if ($dozent) {
+                                    echo $already ? ", " : "";
                                     echo htmlReady(
                                         $dozent['title_front']
                                             ? $dozent['title_front']. " ". $dozent['nachname']
                                             : $dozent['vorname']. " ". $dozent['nachname']
                                     );
+                                    $already = true;
                                 }
                             } ?>
                         </td>
