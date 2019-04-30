@@ -77,7 +77,7 @@ class PlanController extends PluginController {
                 WHERE resources_assign.resource_id IN (:resource_ids)
                     AND termine.end_time > UNIX_TIMESTAMP()
                     AND termine.date < UNIX_TIMESTAMP() + 43200
-                /* GROUP BY termine.termin_id */
+                GROUP BY termine.termin_id
             )
             UNION /* ex_termine */
             (
@@ -138,6 +138,7 @@ class PlanController extends PluginController {
             'resource_ids' => $resource_ids
         ));
         $this->dates = array();
+
         foreach ($statement->fetchAll(PDO::FETCH_ASSOC) as $data) {
             if ($data['begin']) {
                 $this->dates[] = $data;
