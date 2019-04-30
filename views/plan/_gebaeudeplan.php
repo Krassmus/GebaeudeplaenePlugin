@@ -33,13 +33,19 @@
                             <?= htmlReady($date['name']) ?>
                         </td>
                         <td>
-                            <ul class="clean">
-                                <? if ($date['dozenten']) : ?>
-                                    <? foreach (explode(",", $date['dozenten']) as $dozent_id) : ?>
-                                        <li><?= htmlReady(get_fullname($dozent_id)) ?></li>
-                                    <? endforeach ?>
-                                <? endif ?>
-                            </ul>
+                            <? if ($date['dozenten']) : ?>
+                                <? foreach (explode(",", $date['dozenten']) as $count => $dozent_id) {
+                                    echo $count > 0 ? ", " : "";
+                                    $dozent = User::find($dozent_id);
+                                    if ($dozent) {
+                                        echo htmlReady(
+                                        $dozent['title_front']
+                                                ? $dozent['title_front']. " ". $dozent['nachname']
+                                                : $dozent['vorname']. " ". $dozent['nachname']
+                                        );
+                                    }
+                                } ?>
+                            <? endif ?>
                         </td>
                         <td>
                             <?= htmlReady($date['room']) ?>
