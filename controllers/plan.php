@@ -23,8 +23,51 @@ class PlanController extends PluginController {
             $resource_ids = array_unique(array_merge($resource_ids, $statement->fetchAll(PDO::FETCH_COLUMN, 0)));
         } while (count($resource_ids) !== $oldcount);
 
+        $more = "";
+
         if (Request::get("free")) {
-            $freieangaben = "
+            $more .= "
+                UNION /* Buchungen ohne Veranstaltungs- oder Personenbezug */
+                (
+                    SELECT IFNULL(resources_temporary_events.`begin`, resources_assign.`begin`) AS `begin`, 
+                           IFNULL(resources_temporary_events.`end`, resources_assign.`end`) AS `end`, 
+                           resources_assign.user_free_name AS name, 
+                           '0' AS is_ex_termin, 
+                           '' AS `dozenten`, 
+                           resources_objects.name AS `room`
+                    FROM resources_assign 
+                        INNER JOIN resources_objects ON (resources_objects.resource_id = resources_assign.resource_id)
+                        LEFT JOIN resources_temporary_events ON (resources_temporary_events.assign_id = resources_assign.assign_id)
+                    WHERE resources_assign.resource_id IN (:resource_ids)
+                        AND resources_assign.assign_user_id IS NULL
+                        AND (
+                            (resources_temporary_events.`begin` IS NULL AND resources_assign.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_assign.`end` > UNIX_TIMESTAMP())
+                            OR (resources_temporary_events.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_temporary_events.`end` > UNIX_TIMESTAMP())
+                        )
+                )
+                UNION /* Buchungen nur mit Personenbezug */
+                (
+                    SELECT IFNULL(resources_temporary_events.`begin`, resources_assign.`begin`) AS `begin`, 
+                           IFNULL(resources_temporary_events.`end`, resources_assign.`end`) AS `end`, 
+                           resources_assign.user_free_name AS name,  
+                           '0' AS is_ex_termin, 
+                           auth_user_md5.user_id AS `dozenten`, 
+                           resources_objects.name AS `room`
+                    FROM resources_assign 
+                        LEFT JOIN resources_temporary_events ON (resources_temporary_events.assign_id = resources_assign.assign_id)
+                        INNER JOIN resources_objects ON (resources_objects.resource_id = resources_assign.resource_id)
+                        INNER JOIN auth_user_md5 ON (auth_user_md5.user_id = resources_assign.assign_user_id)
+                    WHERE resources_assign.resource_id IN (:resource_ids)
+                        AND (
+                            (resources_temporary_events.`begin` IS NULL AND resources_assign.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_assign.`end` > UNIX_TIMESTAMP())
+                            OR (resources_temporary_events.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_temporary_events.`end` > UNIX_TIMESTAMP())
+                        )
+                )
+            ";
+        }
+
+        if (Request::get("free")) {
+            $more .= "
                 UNION ( /* termine ohne Räume */
                     SELECT
                         termine.`date` AS `begin`, 
@@ -60,6 +103,8 @@ class PlanController extends PluginController {
                 )
             ";
         }
+
+
         $statement = DBManager::get()->prepare("
             (   /* termine */
                 SELECT termine.`date` AS `begin`, 
@@ -94,44 +139,7 @@ class PlanController extends PluginController {
                     AND ex_termine.date < UNIX_TIMESTAMP() + 43200
                 GROUP BY ex_termine.termin_id
             )
-            UNION /* Buchungen ohne Veranstaltungs- oder Personenbezug */
-            (
-                SELECT IFNULL(resources_temporary_events.`begin`, resources_assign.`begin`) AS `begin`, 
-                       IFNULL(resources_temporary_events.`end`, resources_assign.`end`) AS `end`, 
-                       resources_assign.user_free_name AS name, 
-                       '0' AS is_ex_termin, 
-                       '' AS `dozenten`, 
-                       resources_objects.name AS `room`
-                FROM resources_assign 
-                    INNER JOIN resources_objects ON (resources_objects.resource_id = resources_assign.resource_id)
-                    LEFT JOIN resources_temporary_events ON (resources_temporary_events.assign_id = resources_assign.assign_id)
-                WHERE resources_assign.resource_id IN (:resource_ids)
-                    AND resources_assign.assign_user_id IS NULL
-                    AND (
-                        (resources_temporary_events.`begin` IS NULL AND resources_assign.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_assign.`end` > UNIX_TIMESTAMP())
-                        OR (resources_temporary_events.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_temporary_events.`end` > UNIX_TIMESTAMP())
-                    )
-                    
-            )
-            UNION /* Buchungen nur mit Personenbezug */
-            (
-                SELECT IFNULL(resources_temporary_events.`begin`, resources_assign.`begin`) AS `begin`, 
-                       IFNULL(resources_temporary_events.`end`, resources_assign.`end`) AS `end`, 
-                       resources_assign.user_free_name AS name,  
-                       '0' AS is_ex_termin, 
-                       auth_user_md5.user_id AS `dozenten`, 
-                       resources_objects.name AS `room`
-                FROM resources_assign 
-                    LEFT JOIN resources_temporary_events ON (resources_temporary_events.assign_id = resources_assign.assign_id)
-                    INNER JOIN resources_objects ON (resources_objects.resource_id = resources_assign.resource_id)
-                    INNER JOIN auth_user_md5 ON (auth_user_md5.user_id = resources_assign.assign_user_id)
-                WHERE resources_assign.resource_id IN (:resource_ids)
-                    AND (
-                        (resources_temporary_events.`begin` IS NULL AND resources_assign.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_assign.`end` > UNIX_TIMESTAMP())
-                        OR (resources_temporary_events.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_temporary_events.`end` > UNIX_TIMESTAMP())
-                    )
-            )
-            ".$freieangaben."
+            ".$more."
             ORDER BY `begin` ASC
         ");
         $statement->execute(array(
