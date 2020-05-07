@@ -1,12 +1,13 @@
 <div style="padding: 20px; display: flex; flex-direction: row; align-content: stretch; align-items: stretch; justify-content: space-evenly; height: 100vh;">
     <div style="width: 100%; display: flex; flex-direction: column; align-content: stretch; align-items: stretch; justify-content: center;">
-        <? if ($resource->info && $resource->info['top_info']) : ?>
+        <? $resourceinfo = GPResourceInfo::find($resource->id) ?>
+        <? if ($resourceinfo && $resourceinfo['top_info']) : ?>
             <div class="top_info" style="padding: 10px;">
-                <?= formatReady($resource->info ? $resource->info['top_info'] : "") ?>
+                <?= formatReady($resourceinfo ? $resourceinfo['top_info'] : "") ?>
             </div>
         <? endif ?>
         <table class="default">
-            <caption><?= htmlReady($resource->info['title'] ?: $resource->name) ?></caption>
+            <caption><?= htmlReady($resourceinfo['title'] ?: $resource->name) ?></caption>
             <thead>
                 <tr>
                     <th><?= _("Beginn") ?></th>
@@ -17,7 +18,7 @@
                 </tr>
             </thead>
             <tbody>
-            <? $max = 12 + (!$resource->info || !$resource->info['top_info'] ? 2 : 0) + (!$resource->info || !$resource->info['bottom_info'] ? 4 : 0) ?>
+            <? $max = 12 + (!$resourceinfo || !$resourceinfo['top_info'] ? 2 : 0) + (!$resourceinfo || !$resourceinfo['bottom_info'] ? 4 : 0) ?>
             <? if (count($dates)) : ?>
                 <? foreach ($dates as $number => $date) : ?>
                     <? if ($number >= $max) { break; } ?>
@@ -69,15 +70,15 @@
             <? endif ?>
             </tbody>
         </table>
-        <? if ($resource->info && $resource->info['bottom_info']) : ?>
+        <? if ($resourceinfo && $resourceinfo['bottom_info']) : ?>
             <div class="bottom_info" style="padding: 10px; min-height: 200px;">
-                <?= formatReady($resource->info ? $resource->info['bottom_info'] : "") ?>
+                <?= formatReady($resourceinfo ? $resourceinfo['bottom_info'] : "") ?>
             </div>
         <? endif ?>
     </div>
-    <? if ($resource->info && $resource->info['side_info']) : ?>
+    <? if ($resourceinfo && $resourceinfo['side_info']) : ?>
         <div class="side_info" style="display: flex; justify-content: center; align-items: center; padding: 10px;">
-            <?= formatReady($resource->info ? $resource->info['side_info'] : "") ?>
+            <?= formatReady($resourceinfo ? $resourceinfo['side_info'] : "") ?>
         </div>
     <? endif ?>
 </div>

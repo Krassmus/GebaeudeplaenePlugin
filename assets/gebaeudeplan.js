@@ -10,7 +10,7 @@ jQuery(function () {
                 jQuery("#gebaeudeplan").html(html);
             }
         });
-    }, 1000 * 60);
+    }, 1000 * 10); //60
 });
 
 STUDIP.showGebaeudeplan = function () {

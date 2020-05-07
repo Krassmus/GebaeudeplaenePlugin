@@ -7,7 +7,7 @@
     </thead>
     <tbody>
     <? if (Request::option("resource_id")) : ?>
-        <? $resource = GPResource::find(Request::option("resource_id")) ?>
+        <? $resource = Resource::find(Request::option("resource_id")) ?>
         <tr>
             <td>
                 <a href="<?= PluginEngine::getLink($plugin, array('resource_id' => $resource['parent_id']), "tree/index") ?>">

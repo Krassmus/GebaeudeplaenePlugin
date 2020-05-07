@@ -1,7 +1,5 @@
 <?php
 
-require_once 'app/controllers/plugin_controller.php';
-
 class PlanController extends PluginController {
 
     public function index_action()
@@ -10,13 +8,13 @@ class PlanController extends PluginController {
         PageLayout::setTitle(_("Gebäudeplan"));
         PageLayout::addScript($this->plugin->getPluginURL()."/assets/gebaeudeplan.js");
         PageLayout::addStylesheet($this->plugin->getPluginURL()."/assets/gebaeudeplan.css");
-        $this->resource = GPResource::find(Request::option("resource_id"));
+        $this->resource = Resource::find(Request::option("resource_id"));
         $resource_ids = array($this->resource->getId());
         do {
             $oldcount = count($resource_ids);
             $statement = DBManager::get()->prepare("
-                SELECT resource_id 
-                FROM resources_objects
+                SELECT id
+                FROM resources
                 WHERE parent_id IN (:resource_ids)
             ");
             $statement->execute(array('resource_ids' => $resource_ids));
@@ -29,38 +27,38 @@ class PlanController extends PluginController {
             $more .= "
                 UNION /* Buchungen ohne Veranstaltungs- oder Personenbezug */
                 (
-                    SELECT IFNULL(resources_temporary_events.`begin`, resources_assign.`begin`) AS `begin`, 
-                           IFNULL(resources_temporary_events.`end`, resources_assign.`end`) AS `end`, 
-                           resources_assign.user_free_name AS name, 
-                           '0' AS is_ex_termin, 
-                           '' AS `dozenten`, 
-                           resources_objects.name AS `room`
-                    FROM resources_assign 
-                        INNER JOIN resources_objects ON (resources_objects.resource_id = resources_assign.resource_id)
-                        LEFT JOIN resources_temporary_events ON (resources_temporary_events.assign_id = resources_assign.assign_id)
-                    WHERE resources_assign.resource_id IN (:resource_ids)
-                        AND resources_assign.assign_user_id IS NULL
+                    SELECT IFNULL(resource_booking_intervals.`begin`, resource_bookings.`begin`) AS `begin`,
+                           IFNULL(resource_booking_intervals.`end`, resource_bookings.`end`) AS `end`,
+                           resource_bookings.description AS name,
+                           '0' AS is_ex_termin,
+                           '' AS `dozenten`,
+                           resources.name AS `room`
+                    FROM resource_bookings
+                        INNER JOIN resources ON (resources.id = resource_bookings.resource_id)
+                        LEFT JOIN resource_booking_intervals ON (resource_booking_intervals.booking_id = resource_bookings.id)
+                    WHERE resource_bookings.resource_id IN (:resource_ids)
+                        AND resource_bookings.range_id IS NULL
                         AND (
-                            (resources_temporary_events.`begin` IS NULL AND resources_assign.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_assign.`end` > UNIX_TIMESTAMP())
-                            OR (resources_temporary_events.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_temporary_events.`end` > UNIX_TIMESTAMP())
+                            (resource_booking_intervals.`begin` IS NULL AND resource_bookings.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_bookings.`end` > UNIX_TIMESTAMP())
+                            OR (resource_booking_intervals.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_booking_intervals.`end` > UNIX_TIMESTAMP())
                         )
                 )
                 UNION /* Buchungen nur mit Personenbezug */
                 (
-                    SELECT IFNULL(resources_temporary_events.`begin`, resources_assign.`begin`) AS `begin`, 
-                           IFNULL(resources_temporary_events.`end`, resources_assign.`end`) AS `end`, 
-                           resources_assign.user_free_name AS name,  
-                           '0' AS is_ex_termin, 
-                           auth_user_md5.user_id AS `dozenten`, 
-                           resources_objects.name AS `room`
-                    FROM resources_assign 
-                        LEFT JOIN resources_temporary_events ON (resources_temporary_events.assign_id = resources_assign.assign_id)
-                        INNER JOIN resources_objects ON (resources_objects.resource_id = resources_assign.resource_id)
-                        INNER JOIN auth_user_md5 ON (auth_user_md5.user_id = resources_assign.assign_user_id)
-                    WHERE resources_assign.resource_id IN (:resource_ids)
+                    SELECT IFNULL(resource_booking_intervals.`begin`, resource_bookings.`begin`) AS `begin`,
+                           IFNULL(resource_booking_intervals.`end`, resource_bookings.`end`) AS `end`,
+                           resource_bookings.description AS name,
+                           '0' AS is_ex_termin,
+                           auth_user_md5.user_id AS `dozenten`,
+                           resources.name AS `room`
+                    FROM resource_bookings
+                        LEFT JOIN resource_booking_intervals ON (resource_booking_intervals.booking_id = resource_bookings.id)
+                        INNER JOIN resources ON (resources.id = resource_bookings.resource_id)
+                        INNER JOIN auth_user_md5 ON (auth_user_md5.user_id = resource_bookings.range_id)
+                    WHERE resource_bookings.resource_id IN (:resource_ids)
                         AND (
-                            (resources_temporary_events.`begin` IS NULL AND resources_assign.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_assign.`end` > UNIX_TIMESTAMP())
-                            OR (resources_temporary_events.`begin` < UNIX_TIMESTAMP() + 43200 AND resources_temporary_events.`end` > UNIX_TIMESTAMP())
+                            (resource_booking_intervals.`begin` IS NULL AND resource_bookings.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_bookings.`end` > UNIX_TIMESTAMP())
+                            OR (resource_booking_intervals.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_booking_intervals.`end` > UNIX_TIMESTAMP())
                         )
                 )
             ";
@@ -70,35 +68,35 @@ class PlanController extends PluginController {
             $more .= "
                 UNION ( /* termine ohne Räume */
                     SELECT
-                        termine.`date` AS `begin`, 
-                        termine.`end_time` AS `end`, 
-                        seminare.name AS name, 
-                        '0' AS is_ex_termin, 
-                        IFNULL (GROUP_CONCAT(termin_related_persons.user_id ORDER BY seminar_user.position ASC SEPARATOR ','), GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',')) AS `dozenten`, 
-                        termine.raum AS `room` 
+                        termine.`date` AS `begin`,
+                        termine.`end_time` AS `end`,
+                        seminare.name AS name,
+                        '0' AS is_ex_termin,
+                        IFNULL (GROUP_CONCAT(termin_related_persons.user_id ORDER BY seminar_user.position ASC SEPARATOR ','), GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',')) AS `dozenten`,
+                        termine.raum AS `room`
                     FROM termine
                         INNER JOIN seminare ON (seminare.Seminar_id = termine.range_id)
                         INNER JOIN seminar_user ON (seminare.Seminar_id = seminar_user.Seminar_id AND seminar_user.status = 'dozent')
                         LEFT JOIN termin_related_persons ON (termin_related_persons.range_id = termine.termin_id AND termin_related_persons.user_id = seminar_user.user_id)
                     WHERE termine.end_time > UNIX_TIMESTAMP()
                         AND termine.date < UNIX_TIMESTAMP() + 43200
-                        AND termine.raum IS NOT NULL 
+                        AND termine.raum IS NOT NULL
                         AND termine.raum != ''
                 )
                 UNION ( /* ex_termine ohne Räume */
                     SELECT
-                        ex_termine.`date` AS `begin`, 
-                        ex_termine.`end_time` AS `end`, 
-                        seminare.name AS name, 
-                        '1' AS is_ex_termin, 
-                        GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',') AS `dozenten`, 
-                        ex_termine.raum AS `room` 
+                        ex_termine.`date` AS `begin`,
+                        ex_termine.`end_time` AS `end`,
+                        seminare.name AS name,
+                        '1' AS is_ex_termin,
+                        GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',') AS `dozenten`,
+                        ex_termine.raum AS `room`
                     FROM ex_termine
                         INNER JOIN seminare ON (seminare.Seminar_id = ex_termine.range_id)
                         INNER JOIN seminar_user ON (seminare.Seminar_id = seminar_user.Seminar_id AND seminar_user.status = 'dozent')
                     WHERE ex_termine.end_time > UNIX_TIMESTAMP()
                         AND ex_termine.date < UNIX_TIMESTAMP() + 43200
-                        AND ex_termine.raum IS NOT NULL 
+                        AND ex_termine.raum IS NOT NULL
                         AND ex_termine.raum != ''
                 )
             ";
@@ -107,31 +105,31 @@ class PlanController extends PluginController {
 
         $statement = DBManager::get()->prepare("
             (   /* termine */
-                SELECT termine.`date` AS `begin`, 
-                       termine.`end_time` AS `end`, 
-                       seminare.name AS name, 
+                SELECT termine.`date` AS `begin`,
+                       termine.`end_time` AS `end`,
+                       seminare.name AS name,
                        '0' AS is_ex_termin,
-                       IFNULL (GROUP_CONCAT(termin_related_persons.user_id ORDER BY seminar_user.position ASC SEPARATOR ','), GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',')) AS `dozenten`, 
-                       resources_objects.name AS `room`
+                       IFNULL (GROUP_CONCAT(termin_related_persons.user_id ORDER BY seminar_user.position ASC SEPARATOR ','), GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',')) AS `dozenten`,
+                       resources.name AS `room`
                 FROM termine
-                    INNER JOIN resources_assign ON (termine.termin_id = resources_assign.assign_user_id)
-                    INNER JOIN resources_objects ON (resources_objects.resource_id = resources_assign.resource_id)
+                    INNER JOIN resource_bookings ON (termine.termin_id = resource_bookings.range_id)
+                    INNER JOIN resources ON (resources.id = resource_bookings.resource_id)
                     INNER JOIN seminare ON (seminare.Seminar_id = termine.range_id)
                     INNER JOIN seminar_user ON (seminare.Seminar_id = seminar_user.Seminar_id AND seminar_user.status = 'dozent')
                     LEFT JOIN termin_related_persons ON (termin_related_persons.range_id = termine.termin_id AND termin_related_persons.user_id = seminar_user.user_id)
-                WHERE resources_assign.resource_id IN (:resource_ids)
+                WHERE resource_bookings.resource_id IN (:resource_ids)
                     AND termine.end_time > UNIX_TIMESTAMP()
                     AND termine.date < UNIX_TIMESTAMP() + 43200
                 GROUP BY termine.termin_id
             )
             UNION /* ex_termine */
             (
-                SELECT ex_termine.`date` AS `begin`, ex_termine.`end_time` AS `end`, seminare.name AS name, 
-                       '1' AS is_ex_termin, 
-                       GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',') AS `dozenten`, 
-                       resources_objects.name AS `room`
+                SELECT ex_termine.`date` AS `begin`, ex_termine.`end_time` AS `end`, seminare.name AS name,
+                       '1' AS is_ex_termin,
+                       GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',') AS `dozenten`,
+                       resources.name AS `room`
                 FROM ex_termine
-                    INNER JOIN resources_objects ON (resources_objects.resource_id = ex_termine.resource_id)
+                    INNER JOIN resources ON (resources.id = ex_termine.resource_id)
                     INNER JOIN seminare ON (seminare.Seminar_id = ex_termine.range_id)
                     INNER JOIN seminar_user ON (seminare.Seminar_id = seminar_user.Seminar_id AND seminar_user.status = 'dozent')
                 WHERE ex_termine.resource_id IN (:resource_ids)
@@ -162,9 +160,11 @@ class PlanController extends PluginController {
         $this->render_action("_gebaeudeplan");
     }
 
-    public function get_update_action() {
+    public function get_update_action()
+    {
         $this->set_layout(null);
         $this->index_action();
         $this->render_template("plan/_gebaeudeplan");
     }
+
 }
