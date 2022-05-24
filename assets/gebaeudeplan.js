@@ -7,6 +7,7 @@ jQuery(function () {
                 "free": jQuery("#gebaeudeplan").data("free")
             },
             success: function (html) {
+                console.log(html);
                 jQuery("#gebaeudeplan").html(html);
             }
         });
@@ -25,3 +26,4 @@ STUDIP.showGebaeudeplan = function () {
         plan.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
     }
 };
+
