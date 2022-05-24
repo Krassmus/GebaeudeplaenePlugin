@@ -7,7 +7,6 @@ jQuery(function () {
                 "free": jQuery("#gebaeudeplan").data("free")
             },
             success: function (html) {
-                console.log(html);
                 jQuery("#gebaeudeplan").html(html);
             }
         });
