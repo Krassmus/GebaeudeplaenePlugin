@@ -108,6 +108,7 @@ class PlanController extends PluginController {
                 SELECT termine.`date` AS `begin`,
                        termine.`end_time` AS `end`,
                        seminare.name AS name,
+                       'CourseDate' as class,
                        '0' AS is_ex_termin,
                        IFNULL (GROUP_CONCAT(termin_related_persons.user_id ORDER BY seminar_user.position ASC SEPARATOR ','), GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',')) AS `dozenten`,
                        resources.name AS `room`
@@ -124,7 +125,7 @@ class PlanController extends PluginController {
             )
             UNION /* ex_termine */
             (
-                SELECT ex_termine.`date` AS `begin`, ex_termine.`end_time` AS `end`, seminare.name AS name,
+                SELECT ex_termine.`date` AS `begin`, ex_termine.`end_time` AS `end`, seminare.name AS name, 'CourseExDate' as class,
                        '1' AS is_ex_termin,
                        GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',') AS `dozenten`,
                        resources.name AS `room`
