@@ -39,8 +39,8 @@ class PlanController extends PluginController {
                     WHERE resource_bookings.resource_id IN (:resource_ids)
                         AND resource_bookings.range_id IS NULL
                         AND (
-                            (resource_booking_intervals.`begin` IS NULL AND resource_bookings.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_bookings.`end` > UNIX_TIMESTAMP())
-                            OR (resource_booking_intervals.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_booking_intervals.`end` > UNIX_TIMESTAMP())
+                            (resource_booking_intervals.`begin` IS NULL AND resource_bookings.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_bookings.`begin` > UNIX_TIMESTAMP() - :hide_after_time AND resource_bookings.`end` > UNIX_TIMESTAMP())
+                            OR (resource_booking_intervals.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_booking_intervals.`begin` > UNIX_TIMESTAMP() - :hide_after_time AND resource_booking_intervals.`end` > UNIX_TIMESTAMP())
                         )
                 )
                 UNION /* Buchungen nur mit Personenbezug */
@@ -57,8 +57,8 @@ class PlanController extends PluginController {
                         INNER JOIN auth_user_md5 ON (auth_user_md5.user_id = resource_bookings.range_id)
                     WHERE resource_bookings.resource_id IN (:resource_ids)
                         AND (
-                            (resource_booking_intervals.`begin` IS NULL AND resource_bookings.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_bookings.`end` > UNIX_TIMESTAMP())
-                            OR (resource_booking_intervals.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_booking_intervals.`end` > UNIX_TIMESTAMP())
+                            (resource_booking_intervals.`begin` IS NULL AND resource_bookings.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_bookings.`begin` > UNIX_TIMESTAMP() - :hide_after_time AND resource_bookings.`end` > UNIX_TIMESTAMP())
+                            OR (resource_booking_intervals.`begin` < UNIX_TIMESTAMP() + 43200 AND resource_booking_intervals.`begin` > UNIX_TIMESTAMP() - :hide_after_time AND resource_booking_intervals.`end` > UNIX_TIMESTAMP())
                         )
                 )
             ";
@@ -80,6 +80,7 @@ class PlanController extends PluginController {
                         LEFT JOIN termin_related_persons ON (termin_related_persons.range_id = termine.termin_id AND termin_related_persons.user_id = seminar_user.user_id)
                     WHERE termine.end_time > UNIX_TIMESTAMP()
                         AND termine.date < UNIX_TIMESTAMP() + 43200
+                        AND termine.date > UNIX_TIMESTAMP() - :hide_after_time
                         AND termine.raum IS NOT NULL
                         AND termine.raum != ''
                 )
@@ -96,6 +97,7 @@ class PlanController extends PluginController {
                         INNER JOIN seminar_user ON (seminare.Seminar_id = seminar_user.Seminar_id AND seminar_user.status = 'dozent')
                     WHERE ex_termine.end_time > UNIX_TIMESTAMP()
                         AND ex_termine.date < UNIX_TIMESTAMP() + 43200
+                        AND ex_termine.date > UNIX_TIMESTAMP() - :hide_after_time
                         AND ex_termine.raum IS NOT NULL
                         AND ex_termine.raum != ''
                 )
@@ -120,6 +122,7 @@ class PlanController extends PluginController {
                 WHERE resource_bookings.resource_id IN (:resource_ids)
                     AND termine.end_time > UNIX_TIMESTAMP()
                     AND termine.date < UNIX_TIMESTAMP() + 43200
+                    AND termine.date > UNIX_TIMESTAMP() - :hide_after_time
                 GROUP BY termine.termin_id
             )
             UNION /* ex_termine */
@@ -135,13 +138,15 @@ class PlanController extends PluginController {
                 WHERE ex_termine.resource_id IN (:resource_ids)
                     AND ex_termine.end_time > UNIX_TIMESTAMP()
                     AND ex_termine.date < UNIX_TIMESTAMP() + 43200
+                    AND ex_termine.date > UNIX_TIMESTAMP() - :hide_after_time
                 GROUP BY ex_termine.termin_id
             )
             ".$more."
             ORDER BY `begin` ASC
         ");
         $statement->execute(array(
-            'resource_ids' => $resource_ids
+            'resource_ids' => $resource_ids,
+            'hide_after_time' => Config::get()->GEBAEUDEPLAENE_HIDE_DATES_AFTER_TIME
         ));
         $this->dates = array();
 
