@@ -1,6 +1,6 @@
 pluginname=GebaeudeplaenePlugin
 pluginclassname=GebaeudeplaenePlugin
-version=1.7
+version=1.9
 origin=data-quest
-studipMinVersion=4.5
-studipMaxVersion=5.3.99
+studipMinVersion=5.0
+studipMaxVersion=6.1.99

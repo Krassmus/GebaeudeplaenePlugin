@@ -51,17 +51,11 @@
 </head>
 
 <body>
-
     <div id="gebaeudeplan"
          style="background: white;"
          data-resource_id="<?= htmlReady(Request::option("resource_id")) ?>"
          data-free="<?= Request::int("free") ?>">
         <?= $this->render_partial("plan/_gebaeudeplan") ?>
     </div>
-
-    <?
-    $template = $GLOBALS['template_factory']->open('responsive-navigation.php');
-    echo $template->render();
-    ?>
 </body>
 </html>

@@ -7,7 +7,7 @@ class PlanController extends PluginController {
         Navigation::activateItem("/gebaeudeplaene/tree");
         PageLayout::setTitle(_("Gebäudeplan"));
         PageLayout::addScript($this->plugin->getPluginURL()."/assets/gebaeudeplan.js");
-        PageLayout::addStylesheet($this->plugin->getPluginURL()."/assets/gebaeudeplan.css");
+        PageLayout::addStylesheet($this->plugin->getPluginURL()."/assets/gebaeudeplan.scss");
         $this->resource = Resource::find(Request::option("resource_id"));
         $resource_ids = array($this->resource->getId());
         do {
@@ -110,6 +110,7 @@ class PlanController extends PluginController {
                 SELECT termine.`date` AS `begin`,
                        termine.`end_time` AS `end`,
                        seminare.name AS name,
+                       'CourseDate' as class,
                        '0' AS is_ex_termin,
                        IFNULL (GROUP_CONCAT(termin_related_persons.user_id ORDER BY seminar_user.position ASC SEPARATOR ','), GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',')) AS `dozenten`,
                        resources.name AS `room`
@@ -127,7 +128,7 @@ class PlanController extends PluginController {
             )
             UNION /* ex_termine */
             (
-                SELECT ex_termine.`date` AS `begin`, ex_termine.`end_time` AS `end`, seminare.name AS name,
+                SELECT ex_termine.`date` AS `begin`, ex_termine.`end_time` AS `end`, seminare.name AS name, 'CourseExDate' as class,
                        '1' AS is_ex_termin,
                        GROUP_CONCAT(seminar_user.user_id ORDER BY seminar_user.position ASC SEPARATOR ',') AS `dozenten`,
                        resources.name AS `room`
@@ -160,6 +161,7 @@ class PlanController extends PluginController {
     public function kiosk_action()
     {
         $this->index_action();
+        PageLayout::addStylesheet($this->plugin->getPluginURL()."/assets/gebaeudeplan-kiosk.scss");
         $tf = new Flexi_TemplateFactory(__DIR__."/../views");
         $this->set_layout($tf->open("plan/kiosk_layout.php"));
         $this->render_action("_gebaeudeplan");
